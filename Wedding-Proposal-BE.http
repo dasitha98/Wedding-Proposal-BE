@@ -1,0 +1,77 @@
+@Wedding_Proposal_BE_HostAddress = http://localhost:5056
+@accessToken = REPLACE_WITH_ACCESS_TOKEN
+@refreshToken = REPLACE_WITH_REFRESH_TOKEN
+@profileId = REPLACE_WITH_PROFILE_ID
+
+### Register
+POST {{Wedding_Proposal_BE_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "email": "ada@example.com",
+  "password": "Password123"
+}
+
+### Login
+POST {{Wedding_Proposal_BE_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada@example.com",
+  "password": "Password123"
+}
+
+### Refresh
+POST {{Wedding_Proposal_BE_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Request password reset OTP
+POST {{Wedding_Proposal_BE_HostAddress}}/api/auth/password-reset/request
+Content-Type: application/json
+
+{
+  "email": "ada@example.com"
+}
+
+### Get my profile (auto-creates a blank one on first access)
+GET {{Wedding_Proposal_BE_HostAddress}}/api/profiles/me
+Authorization: Bearer {{accessToken}}
+
+### Update my profile
+PUT {{Wedding_Proposal_BE_HostAddress}}/api/profiles/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "basicInfo": { "gender": "female", "religion": "Buddhist", "maritalStatus": "neverMarried" },
+  "residency": { "city": "Colombo", "district": "Colombo", "country": "Sri Lanka" }
+}
+
+### Discover
+GET {{Wedding_Proposal_BE_HostAddress}}/api/discover?sortBy=newest&minAge=18&maxAge=65&page=1&pageSize=14
+Authorization: Bearer {{accessToken}}
+
+### Send a connection request
+POST {{Wedding_Proposal_BE_HostAddress}}/api/profiles/{{profileId}}/requests
+Authorization: Bearer {{accessToken}}
+
+### Get conversation with a profile
+GET {{Wedding_Proposal_BE_HostAddress}}/api/messages/conversations/{{profileId}}
+Authorization: Bearer {{accessToken}}
+
+### Send a message
+POST {{Wedding_Proposal_BE_HostAddress}}/api/messages/conversations/{{profileId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "text": "Hello!"
+}
+
+###
