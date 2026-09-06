@@ -172,18 +172,12 @@ using (var seedScope = app.Services.CreateScope())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors(DevCorsPolicy);
-}
+app.UseCors(DevCorsPolicy);
 
 app.UseRateLimiter();
 
