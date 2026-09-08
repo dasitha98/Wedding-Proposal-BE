@@ -1,0 +1,57 @@
+name: Wedding Proposal Backend
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            set -e
+
+            echo "Starting deployment..."
+
+            cd /root/Wedding-Proposal-BE
+
+            echo "Fetching latest code..."
+            git fetch origin
+            git reset --hard origin/production
+
+            echo "Publishing application..."
+            dotnet publish -c Release -o /root/Wedding-Proposal-BE/publish
+
+            echo "Restarting API..."
+            sudo systemctl restart wedding-proposal-api
+
+            echo "Checking API status..."
+            sudo systemctl is-active wedding-proposal-api
+
+            echo "Deployment completed successfully."
