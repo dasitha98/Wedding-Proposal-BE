@@ -143,3 +143,4 @@ jobs:
             pm2 status wedding-proposal-api
 
             echo "Deployment completed successfully."
+            
