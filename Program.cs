@@ -8,6 +8,7 @@ using Wedding_Proposal_BE.Features.Admin;
 using Wedding_Proposal_BE.Features.Auth;
 using Wedding_Proposal_BE.Features.Discover;
 using Wedding_Proposal_BE.Features.Messages;
+using Wedding_Proposal_BE.Features.Notification;
 using Wedding_Proposal_BE.Features.Profiles;
 using Wedding_Proposal_BE.Features.Users;
 using Wedding_Proposal_BE.Shared.Infrastructure.Data;
@@ -81,6 +82,9 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Feature registrations (each feature owns its own DI wiring)
+// Notification must be registered before Auth: Auth's OTP sender depends on
+// IEmailSender, which AddNotificationFeature registers.
+builder.Services.AddNotificationFeature(builder.Configuration);
 builder.Services.AddAuthFeature(builder.Configuration);
 builder.Services.AddUsersFeature();
 builder.Services.AddProfilesFeature();
@@ -167,6 +171,12 @@ using (var seedScope = app.Services.CreateScope())
         {
             await userManager.AddToRoleAsync(adminUser, RoleNames.Admin);
         }
+    }
+
+    // Opt-in: 5 rows of test data per table (see TestSeedData). Runs after the roles exist.
+    if (builder.Configuration.GetValue<bool>("SeedTestData"))
+    {
+        await TestSeedData.SeedAsync(seedScope.ServiceProvider, app.Logger);
     }
 }
 

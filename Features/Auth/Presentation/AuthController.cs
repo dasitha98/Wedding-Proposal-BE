@@ -8,23 +8,36 @@ using Wedding_Proposal_BE.Shared.Common;
 
 namespace Wedding_Proposal_BE.Features.Auth.Presentation;
 
-/// Thin controller: only orchestrates HTTP <-> IAuthService, no business logic.
+/// Thin controller: only orchestrates HTTP <-> the Auth application services, no business logic.
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IRegistrationService _registrationService;
+    private readonly ISessionService _sessionService;
+    private readonly IPasswordService _passwordService;
+    private readonly IAccountService _accountService;
+    private readonly IGoogleSignInService _googleSignInService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IRegistrationService registrationService,
+        ISessionService sessionService,
+        IPasswordService passwordService,
+        IAccountService accountService,
+        IGoogleSignInService googleSignInService)
     {
-        _authService = authService;
+        _registrationService = registrationService;
+        _sessionService = sessionService;
+        _passwordService = passwordService;
+        _accountService = accountService;
+        _googleSignInService = googleSignInService;
     }
 
     [HttpPost("register")]
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var result = await _authService.RegisterAsync(request);
+        var result = await _registrationService.RegisterAsync(request);
         return result.IsSuccess
             ? Ok(ApiResponse<RegisterResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<RegisterResponse>.Fail(result.Error!, result.ErrorCode));
@@ -34,7 +47,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> VerifyRegistrationOtp([FromBody] VerifyRegistrationOtpRequest request)
     {
-        var result = await _authService.VerifyRegistrationOtpAsync(request.Email, request.Code);
+        var result = await _registrationService.VerifyRegistrationOtpAsync(request.Email, request.Code);
         return result.IsSuccess
             ? Ok(ApiResponse<AuthResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<AuthResponse>.Fail(result.Error!, result.ErrorCode));
@@ -44,7 +57,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> ResendRegistrationOtp([FromBody] ResendRegistrationOtpRequest request)
     {
-        var result = await _authService.ResendRegistrationOtpAsync(request.Email);
+        var result = await _registrationService.ResendRegistrationOtpAsync(request.Email);
         return result.IsSuccess
             ? Ok(ApiResponse<RegisterResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<RegisterResponse>.Fail(result.Error!, result.ErrorCode));
@@ -54,7 +67,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var result = await _authService.LoginAsync(request);
+        var result = await _sessionService.LoginAsync(request);
         return result.IsSuccess
             ? Ok(ApiResponse<AuthResponse>.Ok(result.Value))
             : Unauthorized(ApiResponse<AuthResponse>.Fail(result.Error!, result.ErrorCode));
@@ -63,7 +76,7 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
-        var result = await _authService.RefreshAsync(request.RefreshToken);
+        var result = await _sessionService.RefreshAsync(request.RefreshToken);
         return result.IsSuccess
             ? Ok(ApiResponse<AuthResponse>.Ok(result.Value))
             : Unauthorized(ApiResponse<AuthResponse>.Fail(result.Error!, result.ErrorCode));
@@ -72,7 +85,7 @@ public class AuthController : ControllerBase
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromBody] RefreshTokenRequest request)
     {
-        var result = await _authService.RevokeAsync(request.RefreshToken);
+        var result = await _sessionService.RevokeAsync(request.RefreshToken);
         return result.IsSuccess
             ? Ok(ApiResponse.Ok())
             : BadRequest(ApiResponse.Fail(result.Error!, result.ErrorCode));
@@ -82,7 +95,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> RequestPasswordResetOtp([FromBody] RequestPasswordResetOtpRequest request)
     {
-        var result = await _authService.RequestPasswordResetOtpAsync(request.Email);
+        var result = await _passwordService.RequestPasswordResetOtpAsync(request.Email);
         return result.IsSuccess
             ? Ok(ApiResponse<RequestPasswordResetOtpResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<RequestPasswordResetOtpResponse>.Fail(result.Error!, result.ErrorCode));
@@ -92,7 +105,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> VerifyPasswordResetOtp([FromBody] VerifyPasswordResetOtpRequest request)
     {
-        var result = await _authService.VerifyPasswordResetOtpAsync(request.Email, request.Code);
+        var result = await _passwordService.VerifyPasswordResetOtpAsync(request.Email, request.Code);
         return result.IsSuccess
             ? Ok(ApiResponse<VerifyPasswordResetOtpResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<VerifyPasswordResetOtpResponse>.Fail(result.Error!, result.ErrorCode));
@@ -102,7 +115,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
-        var result = await _authService.ResetPasswordAsync(request.ResetToken, request.NewPassword);
+        var result = await _passwordService.ResetPasswordAsync(request.ResetToken, request.NewPassword);
         return result.IsSuccess
             ? Ok(ApiResponse.Ok())
             : BadRequest(ApiResponse.Fail(result.Error!, result.ErrorCode));
@@ -112,7 +125,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
-        var result = await _authService.ChangePasswordAsync(CurrentUserId, request.CurrentPassword, request.NewPassword);
+        var result = await _passwordService.ChangePasswordAsync(CurrentUserId, request.CurrentPassword, request.NewPassword);
         return result.IsSuccess
             ? Ok(ApiResponse.Ok())
             : BadRequest(ApiResponse.Fail(result.Error!, result.ErrorCode));
@@ -122,7 +135,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateAccount([FromBody] UpdateAccountRequest request)
     {
-        var result = await _authService.UpdateAccountAsync(CurrentUserId, request);
+        var result = await _accountService.UpdateAccountAsync(CurrentUserId, request);
         return result.IsSuccess
             ? Ok(ApiResponse<AuthUserResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<AuthUserResponse>.Fail(result.Error!, result.ErrorCode));
@@ -132,7 +145,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> GoogleStart([FromBody] GoogleAuthStartRequest request)
     {
-        var result = await _authService.StartGoogleSignInAsync(request.RedirectUri);
+        var result = await _googleSignInService.StartGoogleSignInAsync(request.RedirectUri);
         return result.IsSuccess
             ? Ok(ApiResponse<GoogleAuthStartResponse>.Ok(result.Value))
             : BadRequest(ApiResponse<GoogleAuthStartResponse>.Fail(result.Error!, result.ErrorCode));
@@ -142,7 +155,7 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> GoogleCallback([FromBody] GoogleAuthCallbackRequest request)
     {
-        var result = await _authService.CompleteGoogleSignInAsync(request.Code, request.State);
+        var result = await _googleSignInService.CompleteGoogleSignInAsync(request.Code, request.State);
         return result.IsSuccess
             ? Ok(ApiResponse<AuthResponse>.Ok(result.Value))
             : Unauthorized(ApiResponse<AuthResponse>.Fail(result.Error!, result.ErrorCode));

@@ -18,7 +18,6 @@ public static class AuthServiceRegistration
             ?? throw new InvalidOperationException("Jwt configuration section is missing.");
 
         services.Configure<GoogleAuthOptions>(configuration.GetSection(GoogleAuthOptions.SectionName));
-        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
 
         services
             .AddAuthentication(options =>
@@ -44,19 +43,18 @@ public static class AuthServiceRegistration
         services.AddScoped<TokenClaimsFactory>();
         services.AddScoped<ITokenService, TokenService>();
 
-        // Real SMTP delivery once Smtp:Username/Password are configured (e.g. via user-secrets);
-        // otherwise fall back to logging the code so the app still runs without email set up.
-        var smtpOptions = configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>();
-        if (!string.IsNullOrWhiteSpace(smtpOptions?.Username) && !string.IsNullOrWhiteSpace(smtpOptions.Password))
-        {
-            services.AddScoped<IOtpSender, SmtpOtpSender>();
-        }
-        else
-        {
-            services.AddScoped<IOtpSender, LoggingOtpSender>();
-        }
+        // Delivery for OTP codes goes through the Notification feature's IEmailSender —
+        // registered by AddNotificationFeature, which must run before AddAuthFeature.
+        services.AddScoped<IOtpSender, EmailOtpSender>();
 
-        services.AddScoped<IAuthService, AuthService>();
+        // Shared by every use case below that issues an authenticated session.
+        services.AddScoped<IAuthResponseFactory, AuthResponseFactory>();
+
+        services.AddScoped<IRegistrationService, RegistrationService>();
+        services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IGoogleSignInService, GoogleSignInService>();
 
         // Google OIDC sign-in: a memory cache for the short-lived, single-use PKCE/nonce
         // transactions (see GoogleOidcTransactionStore for why this must become a distributed

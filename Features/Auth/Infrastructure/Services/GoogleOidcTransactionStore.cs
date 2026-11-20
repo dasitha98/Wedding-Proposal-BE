@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Caching.Memory;
+using Wedding_Proposal_BE.Features.Auth.Application.Interfaces;
 
 namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;
 

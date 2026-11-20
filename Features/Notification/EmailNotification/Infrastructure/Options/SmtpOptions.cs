@@ -1,4 +1,4 @@
-namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Options;
+namespace Wedding_Proposal_BE.Features.Notification.EmailNotification.Infrastructure.Options;
 
 public class SmtpOptions
 {

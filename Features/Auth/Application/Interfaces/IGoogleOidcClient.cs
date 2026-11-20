@@ -1,4 +1,4 @@
-namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;
+namespace Wedding_Proposal_BE.Features.Auth.Application.Interfaces;
 
 /// The verified identity extracted from a Google ID token. `Subject` (the `sub` claim) is
 /// Google's stable, unique identifier for the end user — the only field ever used to look up
@@ -16,8 +16,8 @@ public class GoogleOidcException : Exception
     }
 }
 
-/// Talks to Google's OIDC endpoints. Isolated behind an interface so AuthService's use-case
-/// logic can be unit tested without making real network calls to Google.
+/// Talks to Google's OIDC endpoints. Isolated behind an interface so GoogleSignInService's
+/// use-case logic can be unit tested without making real network calls to Google.
 public interface IGoogleOidcClient
 {
     /// Exchanges an authorization code (+ PKCE verifier) for tokens, then validates the

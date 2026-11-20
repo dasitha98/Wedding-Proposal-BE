@@ -1,7 +1,7 @@
 namespace Wedding_Proposal_BE.Features.Auth.Domain.Entities;
 
 /// One row per outstanding registration-verification OTP for an email. A new request replaces
-/// the previous row for that email (see AuthService) rather than accumulating history.
+/// the previous row for that email (see RegistrationService) rather than accumulating history.
 public class EmailVerificationOtp
 {
     private const int MaxAttempts = 5;
