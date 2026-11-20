@@ -29,24 +29,87 @@ jobs:
 
       - name: Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.2.2
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DO_SPACES_ACCESS_KEY: ${{ secrets.DO_SPACES_ACCESS_KEY }}
+          DO_SPACES_SECRET_KEY: ${{ secrets.DO_SPACES_SECRET_KEY }}
+          DO_SPACES_SERVICE_URL: ${{ secrets.DO_SPACES_SERVICE_URL }}
+          DO_SPACES_BUCKET_NAME: ${{ secrets.DO_SPACES_BUCKET_NAME }}
+          DO_SPACES_CDN_BASE_URL: ${{ secrets.DO_SPACES_CDN_BASE_URL }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+          ADMIN_SEED_EMAIL: ${{ secrets.ADMIN_SEED_EMAIL }}
+          ADMIN_SEED_PASSWORD: ${{ secrets.ADMIN_SEED_PASSWORD }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
+          envs: DB_CONNECTION_STRING,JWT_SIGNING_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USERNAME,SMTP_PASSWORD,SMTP_FROM_EMAIL,DO_SPACES_ACCESS_KEY,DO_SPACES_SECRET_KEY,DO_SPACES_SERVICE_URL,DO_SPACES_BUCKET_NAME,DO_SPACES_CDN_BASE_URL,APP_DIR,ADMIN_SEED_EMAIL,ADMIN_SEED_PASSWORD
           script: |
             set -e
 
             echo "Starting deployment..."
 
-            cd /root/Wedding-Proposal-BE
+            echo "Writing application secrets..."
+            ENV_DIR=/etc/wedding-proposal-api
+            ENV_FILE=$ENV_DIR/api.env
+            TMP_FILE=$(mktemp)
+            chmod 600 "$TMP_FILE"
+
+            # Appends KEY="value" in systemd EnvironmentFile format; skips empty secrets so
+            # unset ones fall back to appsettings.json instead of being overridden with "".
+            add_env() {
+              if [ -n "$2" ]; then
+                escaped=$(printf '%s' "$2" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')
+                printf '%s="%s"\n' "$1" "$escaped" >> "$TMP_FILE"
+              fi
+            }
+
+            add_env ASPNETCORE_ENVIRONMENT "Production"
+            add_env ConnectionStrings__DefaultConnection "$DB_CONNECTION_STRING"
+            add_env Jwt__SigningKey "$JWT_SIGNING_KEY"
+            add_env Google__ClientId "$GOOGLE_CLIENT_ID"
+            add_env Google__ClientSecret "$GOOGLE_CLIENT_SECRET"
+            add_env Smtp__Host "$SMTP_HOST"
+            add_env Smtp__Port "$SMTP_PORT"
+            add_env Smtp__Username "$SMTP_USERNAME"
+            add_env Smtp__Password "$SMTP_PASSWORD"
+            add_env Smtp__FromEmail "$SMTP_FROM_EMAIL"
+            add_env DigitalOceanSpaces__AccessKey "$DO_SPACES_ACCESS_KEY"
+            add_env DigitalOceanSpaces__SecretKey "$DO_SPACES_SECRET_KEY"
+            add_env DigitalOceanSpaces__ServiceUrl "$DO_SPACES_SERVICE_URL"
+            add_env DigitalOceanSpaces__BucketName "$DO_SPACES_BUCKET_NAME"
+            add_env DigitalOceanSpaces__CdnBaseUrl "$DO_SPACES_CDN_BASE_URL"
+            add_env AdminSeed__Email "$ADMIN_SEED_EMAIL"
+            add_env AdminSeed__Password "$ADMIN_SEED_PASSWORD"
+
+            sudo install -d -m 700 "$ENV_DIR"
+            sudo install -m 600 "$TMP_FILE" "$ENV_FILE"
+            rm -f "$TMP_FILE"
+
+            # Point the systemd service at the env file (idempotent drop-in).
+            sudo install -d /etc/systemd/system/wedding-proposal-api.service.d
+            printf '[Service]\nEnvironmentFile=%s\n' "$ENV_FILE" \
+              | sudo tee /etc/systemd/system/wedding-proposal-api.service.d/secrets.conf > /dev/null
+            sudo systemctl daemon-reload
+
+            : "${APP_DIR:?APP_DIR secret is not set}"
+            cd "$APP_DIR"
 
             echo "Fetching latest code..."
             git fetch origin
             git reset --hard origin/production
 
             echo "Publishing application..."
-            dotnet publish -c Release -o /root/Wedding-Proposal-BE/publish
+            dotnet publish -c Release -o "$APP_DIR/publish"
 
             echo "Restarting API..."
             sudo systemctl restart wedding-proposal-api
