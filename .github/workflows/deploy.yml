@@ -36,11 +36,9 @@ jobs:
           JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          SENDPULSE_CLIENT_ID: ${{ secrets.SENDPULSE_CLIENT_ID }}
+          SENDPULSE_CLIENT_SECRET: ${{ secrets.SENDPULSE_CLIENT_SECRET }}
+          SENDPULSE_FROM_EMAIL: ${{ secrets.SENDPULSE_FROM_EMAIL }}
           DO_SPACES_ACCESS_KEY: ${{ secrets.DO_SPACES_ACCESS_KEY }}
           DO_SPACES_SECRET_KEY: ${{ secrets.DO_SPACES_SECRET_KEY }}
           DO_SPACES_SERVICE_URL: ${{ secrets.DO_SPACES_SERVICE_URL }}
@@ -54,7 +52,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          envs: DB_CONNECTION_STRING,JWT_SIGNING_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USERNAME,SMTP_PASSWORD,SMTP_FROM_EMAIL,DO_SPACES_ACCESS_KEY,DO_SPACES_SECRET_KEY,DO_SPACES_SERVICE_URL,DO_SPACES_BUCKET_NAME,DO_SPACES_CDN_BASE_URL,APP_DIR,ADMIN_SEED_EMAIL,ADMIN_SEED_PASSWORD
+          envs: DB_CONNECTION_STRING,JWT_SIGNING_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,SENDPULSE_CLIENT_ID,SENDPULSE_CLIENT_SECRET,SENDPULSE_FROM_EMAIL,DO_SPACES_ACCESS_KEY,DO_SPACES_SECRET_KEY,DO_SPACES_SERVICE_URL,DO_SPACES_BUCKET_NAME,DO_SPACES_CDN_BASE_URL,APP_DIR,ADMIN_SEED_EMAIL,ADMIN_SEED_PASSWORD
           script: |
             set -e
 
@@ -79,11 +77,9 @@ jobs:
             add_env Jwt__SigningKey "$JWT_SIGNING_KEY"
             add_env Google__ClientId "$GOOGLE_CLIENT_ID"
             add_env Google__ClientSecret "$GOOGLE_CLIENT_SECRET"
-            add_env Smtp__Host "$SMTP_HOST"
-            add_env Smtp__Port "$SMTP_PORT"
-            add_env Smtp__Username "$SMTP_USERNAME"
-            add_env Smtp__Password "$SMTP_PASSWORD"
-            add_env Smtp__FromEmail "$SMTP_FROM_EMAIL"
+            add_env SendPulse__ClientId "$SENDPULSE_CLIENT_ID"
+            add_env SendPulse__ClientSecret "$SENDPULSE_CLIENT_SECRET"
+            add_env SendPulse__FromEmail "$SENDPULSE_FROM_EMAIL"
             add_env DigitalOceanSpaces__AccessKey "$DO_SPACES_ACCESS_KEY"
             add_env DigitalOceanSpaces__SecretKey "$DO_SPACES_SECRET_KEY"
             add_env DigitalOceanSpaces__ServiceUrl "$DO_SPACES_SERVICE_URL"
@@ -114,11 +110,9 @@ jobs:
             export Jwt__SigningKey="$JWT_SIGNING_KEY"
             export Google__ClientId="$GOOGLE_CLIENT_ID"
             export Google__ClientSecret="$GOOGLE_CLIENT_SECRET"
-            export Smtp__Host="$SMTP_HOST"
-            export Smtp__Port="$SMTP_PORT"
-            export Smtp__Username="$SMTP_USERNAME"
-            export Smtp__Password="$SMTP_PASSWORD"
-            export Smtp__FromEmail="$SMTP_FROM_EMAIL"
+            export SendPulse__ClientId="$SENDPULSE_CLIENT_ID"
+            export SendPulse__ClientSecret="$SENDPULSE_CLIENT_SECRET"
+            export SendPulse__FromEmail="$SENDPULSE_FROM_EMAIL"
             export DigitalOceanSpaces__AccessKey="$DO_SPACES_ACCESS_KEY"
             export DigitalOceanSpaces__SecretKey="$DO_SPACES_SECRET_KEY"
             export DigitalOceanSpaces__ServiceUrl="$DO_SPACES_SERVICE_URL"

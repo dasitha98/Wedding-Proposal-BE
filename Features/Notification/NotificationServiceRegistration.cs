@@ -15,15 +15,23 @@ public static class NotificationServiceRegistration
 {
     public static IServiceCollection AddNotificationFeature(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.Configure<SendPulseOptions>(configuration.GetSection(SendPulseOptions.SectionName));
 
-        var smtpOptions = configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>();
-        if (string.IsNullOrWhiteSpace(smtpOptions?.Username) || string.IsNullOrWhiteSpace(smtpOptions.Password))
+        var sendPulseOptions = configuration.GetSection(SendPulseOptions.SectionName).Get<SendPulseOptions>();
+        if (string.IsNullOrWhiteSpace(sendPulseOptions?.ClientId)
+            || string.IsNullOrWhiteSpace(sendPulseOptions.ClientSecret)
+            || string.IsNullOrWhiteSpace(sendPulseOptions.FromEmail))
         {
-            throw new InvalidOperationException("Smtp:Username and Smtp:Password must be configured.");
+            throw new InvalidOperationException(
+                "SendPulse:ClientId, SendPulse:ClientSecret and SendPulse:FromEmail must be configured.");
         }
 
-        services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton<SendPulseTokenCache>();
+        services.AddHttpClient<IEmailSender, SendPulseEmailSender>(client =>
+        {
+            client.BaseAddress = new Uri(sendPulseOptions.ApiBaseUrl.TrimEnd('/') + "/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         // No SMS/push providers are configured yet — logging stubs keep the app runnable end
         // to end. Swap these for real providers (e.g. Twilio, Firebase Cloud Messaging) here

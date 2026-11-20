@@ -4,7 +4,7 @@ using Wedding_Proposal_BE.Features.Notification.EmailNotification.Application.In
 namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;
 
 /// Formats OTP codes as an email and delegates delivery to the Notification feature's
-/// IEmailSender (real SMTP or logging, depending on how Notification is configured — see
+/// IEmailSender (SendPulse, as configured in
 /// NotificationServiceRegistration).
 public class EmailOtpSender : IOtpSender
 {
