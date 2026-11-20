@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - production
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -143,4 +144,3 @@ jobs:
             pm2 status wedding-proposal-api
 
             echo "Deployment completed successfully."
-            
