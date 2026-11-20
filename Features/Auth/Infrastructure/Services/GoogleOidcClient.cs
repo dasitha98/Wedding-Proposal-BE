@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
+using Wedding_Proposal_BE.Features.Auth.Application.Interfaces;
 using Wedding_Proposal_BE.Features.Auth.Infrastructure.Options;
 
 namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;

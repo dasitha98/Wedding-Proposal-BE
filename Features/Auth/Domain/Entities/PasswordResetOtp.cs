@@ -1,7 +1,7 @@
 namespace Wedding_Proposal_BE.Features.Auth.Domain.Entities;
 
 /// One row per outstanding password-reset OTP for an email. A new request replaces the
-/// previous row for that email (see AuthService) rather than accumulating history.
+/// previous row for that email (see PasswordService) rather than accumulating history.
 public class PasswordResetOtp
 {
     private const int MaxAttempts = 5;

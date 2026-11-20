@@ -41,5 +41,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
         builder.Ignore<IdentityRoleClaim<Guid>>();
         builder.Ignore<IdentityUserLogin<Guid>>();
         builder.Ignore<IdentityUserToken<Guid>>();
+
+        // Photo/sibling ids are assigned in code (Guid.NewGuid() in their Create factories).
+        // Without this, EF treats a child with a set key as an existing row, so photos/siblings
+        // added to an already-saved profile became UPDATEs matching 0 rows (500 on PUT me).
+        builder.Entity<ProfilePhoto>().Property(p => p.Id).ValueGeneratedNever();
+        builder.Entity<Sibling>().Property(s => s.Id).ValueGeneratedNever();
     }
 }

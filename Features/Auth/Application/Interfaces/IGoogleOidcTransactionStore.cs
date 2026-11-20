@@ -1,4 +1,4 @@
-namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;
+namespace Wedding_Proposal_BE.Features.Auth.Application.Interfaces;
 
 /// One pending "sign in with Google" attempt: the PKCE code verifier and nonce the backend
 /// generated when it built the authorization URL, plus the redirect URI it was bound to.

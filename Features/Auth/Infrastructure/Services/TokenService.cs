@@ -11,7 +11,7 @@ using Wedding_Proposal_BE.Shared.Infrastructure.Identity;
 namespace Wedding_Proposal_BE.Features.Auth.Infrastructure.Services;
 
 /// Single responsibility: knows only how to create/validate JWTs. Does not touch the
-/// database, password hashing, or the register/login use case (that's AuthService).
+/// database, password hashing, or any register/login use case (that's RegistrationService/SessionService).
 public class TokenService : ITokenService
 {
     private readonly JwtOptions _options;
