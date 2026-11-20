@@ -61,7 +61,7 @@ jobs:
 
             echo "Writing application secrets..."
             ENV_DIR=/etc/wedding-proposal-api
-            ENV_FILE=$ENV_DIR/api.env
+            ENV_FILE=$ENV_DIR/production.env
             TMP_FILE=$(mktemp)
             chmod 600 "$TMP_FILE"
 
